@@ -1,6 +1,13 @@
 import Wu from 'wu';
 
 let wu = new Wu();
+let currentScript = wu.doc.querySelector('script[src*="uact.js"]');
+
+if (!currentScript) {
+  let scripts = wu.doc.getElementsByTagName('script');
+
+  currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
+}
 
 if (wu.win.Element && !wu.win.Element.prototype.closest) {
   wu.win.Element.prototype.closest = (s) => {
@@ -108,6 +115,29 @@ class Uact {
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
+
+    // search for script tag
+    let attr = wu.getAttrs(currentScript);
+
+/*eslint-disable */
+    // load gtm and ga
+    if (attr.utm) {
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer', attr.gtm);
+    }
+    if (attr.ga) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', attr.ga, 'auto');
+    }
+/*eslint-enable */
+
   }
 }
 
