@@ -57,7 +57,7 @@ class Uact {
       let query = {};
 
       // normalize query string key to lowercase
-      wu.each(queryTemp, (k, v) => {
+      wu.each(queryTemp, (v, k) => {
         query[k.toLowerCase()] = v;
       });
 
