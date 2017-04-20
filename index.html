@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>uact demo</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="lib/uact.js"></script>
+</head>
+<body>
+  <ul id="log">
+    <li>Please view plugin data with javascript console.</li>
+  </ul>
+  <input type="button" value="button"/> <br />
+  <input type="submit" value="submit" onclick="return false;" /><br />
+  <button type="button"><b>test button</b></button><br />
+  <button type="button">test button2</button><br />
+  <a href="#test"><b>test anchor</b></a><br />
+  <a href="#test2">test anchor2</a><br />
+  <script>
+    window.uact.wu.debug.enable('*');
+    var coupons = [];
+    var isDebug = location.search == "?debug";
+    if (isDebug) {
+      $('#log').html("");
+      if (typeof console != "undefined")
+        if (typeof console.log != 'undefined')
+          console.olog = console.log;
+        else
+          console.olog = function() {};
+
+        console.log = function(message) {
+        console.olog(message);
+        msg = message.replace(/%c/gi, '');
+        $('#log').append('<li>' + msg + '</li>');
+      };
+      console.error = console.debug = console.info =  console.log;
+    }
+  </script>
+</body>
+</html>
