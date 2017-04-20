@@ -1,7 +1,7 @@
 import Wu from 'wu';
 
 let wu = new Wu();
-let currentScript = wu.doc.querySelector('script[src*="uact.js"]');
+let currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
 
 if (!currentScript) {
   let scripts = wu.doc.getElementsByTagName('script');
