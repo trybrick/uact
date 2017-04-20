@@ -9,6 +9,8 @@ if (!currentScript) {
   currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
 }
 
+let opts = wu.getAttrs(currentScript);
+
 if (wu.win.Element && !wu.win.Element.prototype.closest) {
   wu.win.Element.prototype.closest = (s) => {
     let matches = (this.document || wu.win.ownerDocument).querySelectorAll(s),
@@ -46,10 +48,38 @@ class Uact {
    * init function
    * @param  {object} opts options
    */
-  init(opts) {
-    let that = this;
+  init() {
+    this.setupHandlers();
 
-    opts = opts || {};
+/*eslint-disable */
+    // load gtm and ga
+    if (opts.utm) {
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer', opts.gtm);
+    }
+    
+    if (opts.ga) {
+      if (typeof (wu.win.ga) === 'undefined') {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      }
+
+      ga('create', opts.ga, 'auto');
+    }
+/*eslint-enable */
+
+  }
+
+  /**
+   * setup action handlers
+   */
+  setupHandlers() {
+    let that = this;
 
     function actionHandler(e) {
       let queryString = wu.win.location.search.substring(1);
@@ -97,7 +127,7 @@ class Uact {
       that.log(evt);
 
       // track google tag manager
-      if (!opts.disableGTM && (typeof (wu.win.dataLayer) !== 'undefined')) {
+      if (typeof (wu.win.dataLayer) !== 'undefined') {
         wu.win.dataLayer.push({
           'category': evt.category,
           'action': evt.action,
@@ -108,39 +138,13 @@ class Uact {
       }
 
       // track google analytics
-      if (!opts.disableGA && (typeof (wu.win.ga) !== 'undefined')) {
+      if (typeof (wu.win.ga) !== 'undefined') {
         wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
       }
     }
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
-
-    // search for script tag
-    let attrs = wu.getAttrs(currentScript);
-
-/*eslint-disable */
-    // load gtm and ga
-    if (attrs.utm) {
-      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer', attrs.gtm);
-    }
-    
-    if (attrs.ga) {
-      if (typeof (wu.win.ga) === 'undefined') {
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      }
-
-      ga('create', attrs.ga, 'auto');
-    }
-/*eslint-enable */
-
   }
 }
 
