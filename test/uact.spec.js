@@ -1,7 +1,7 @@
 /*global describe, it, before */
 
 import chai from 'chai';
-import Wu from '../lib/Wu.js';
+import Uact from '../lib/uact.js';
 
 chai.expect();
 
@@ -9,13 +9,13 @@ const expect = chai.expect;
 
 let lib;
 
-describe('Given an instance of my Wu',  () => {
+describe('Given an instance of my Uact',  () => {
   before(() => {
-    lib = new Wu();
+    lib = Uact;
   });
   describe('when I need the name', () => {
     it('should return the name', () => {
-      expect(lib.name).to.be.equal('Wu');
+      expect(lib.name).to.be.equal('Uact');
     });
   });
 });

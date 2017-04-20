@@ -23,6 +23,7 @@ class Uact {
   constructor() {
     this.wu = wu;
     this.log = wu.debug('uact');
+    this._name = 'Uact';
     this.init();
   }
 
@@ -45,7 +46,13 @@ class Uact {
 
     function actionHandler(e) {
       let queryString = wu.win.location.search.substring(1);
-      let query = wu.queryParseString(queryString);
+      let queryTemp = wu.queryParseString(queryString);
+      let query = {};
+
+      // normalize query string key to lowercase
+      wu.each(queryTemp, (k, v) => {
+        query[k.toLowerCase()] = v;
+      });
 
       if (wu.isNull(query.utm_campaign, '').length < 2) {
         that.log('exiting: invalid utm_campaign');
