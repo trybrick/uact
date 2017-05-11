@@ -141,7 +141,7 @@ class Uact {
       // track event in our own analytics
       if (that._brxua) {
         let image = new Image(1, 1);
-        let uae = { ea: event.action, el: evt.label, ev: evt.value, ec: evt.category };
+        let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category, cb: (new Date().getTime()) };
 
         image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae);
       }
