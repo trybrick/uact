@@ -33,6 +33,7 @@ class Uact {
     this.wu = wu;
     this.log = wu.debug('uact');
     this._name = 'Uact';
+    this._brxua = '79697394-26';
     this.init();
   }
 
@@ -100,22 +101,33 @@ class Uact {
       let target = event.target || event.srcElement;
       let btn = target.closest('button');
       let evt = {query: query, category: query.utm_campaign, value: 1 };
+      let tagName = (target.tagName + '').toLowerCase();
 
-      if (target.tagName === 'INPUT') {
+      if (tagName === 'input') {
         let targetType = target.type.toLowerCase();
 
         if (targetType === 'submit' || targetType === 'button') {
           evt.action = target.name || target.id || e.type || 'button action';
           evt.label = target.value;
         }
+      } else if (tagName === 'select' && target.options && target.selectedIndex) {
+        let opt = target.options[target.selectedIndex];
+        
+        if (opt) {
+          evt.action = target.name || target.id || e.type || 'select action';
+          evt.label = `${opt.value}_${opt.text}`;
+        }
       } else if (btn) {
         evt.action = btn.name || btn.id || e.type || 'button action';
         evt.label = btn.textContent || btn.innerText;
+      } else if (e.type === 'change') {
+        that.log('exiting from non-select change event');
+        return;
       } else {
         let a = target.closest('a');
 
         if (!a) {
-          that.log('exiting: click has no valid parent element');
+          that.log(`exiting from ${e.type} event with no valid parent element`);
           return;
         }
 
@@ -125,6 +137,14 @@ class Uact {
 
       that.log('triggering...');
       that.log(evt);
+
+      // track event in our own analytics
+      if (that._brxua) {
+        let image = new Image(1, 1);
+        let uae = { ea: event.action, el: evt.label, ev: evt.value, ec: evt.category };
+
+        image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae);
+      }
 
       // track google tag manager
       if (typeof (wu.win.dataLayer) !== 'undefined') {
