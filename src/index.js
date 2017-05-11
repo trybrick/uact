@@ -92,10 +92,17 @@ class Uact {
         query[k.toLowerCase()] = v;
       });
 
+/*eslint-disable */
+      // tom mistake come back to bite me
+      if (query.utm_name) {
+        query.utm_campaign = query.utm_name;
+      }
+
       if (wu.isNull(query.utm_campaign, '').length < 2) {
         that.log('exiting: invalid utm_campaign');
         return;
       }
+/*eslint-enable */
 
       let event = e || that.win.event;
       let target = event.target || event.srcElement;
