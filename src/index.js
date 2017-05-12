@@ -11,6 +11,7 @@ if (!currentScript) {
 
 let opts = wu.getAttrs(currentScript);
 let scriptQuery = currentScript.src.split('?')[1];
+let queryString = (wu.win.location.search + '').substring(1);
 
 if (scriptQuery) {
   opts = wu.extend(opts, wu.queryParseString(scriptQuery));
@@ -55,7 +56,9 @@ class Uact {
    * @param  {object} opts options
    */
   init() {
-    this.setupHandlers();
+    let that = this;
+
+    that.setupHandlers();
 
 /*eslint-disable */
     // load gtm and ga
@@ -79,6 +82,32 @@ class Uact {
     }
 /*eslint-enable */
 
+    if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
+      that.log(`begin updating anchors`);
+      wu.win.jQuery(wu.doc).ready(() => {
+        wu.each(wu.win.jQuery('a'), (v, k) => {
+          let oldHref = wu.getAttr(v, 'href');
+          let parts = oldHref.split('#');
+
+          // exit if javascript or bad href
+          if (oldHref.length <= 0 || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
+            return;
+          }
+
+          // append & instead of ? if existing query string
+          parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryString;
+
+          // finally add back hash
+          if (parts[1]) {
+            parts[0] = parts[0] + '#' + parts[1];
+          }
+
+          that.log(`update from [${oldHref}] to [${parts[0]}]`);
+          this.href = parts[0];
+        });
+      });
+    }
+
   }
 
   /**
@@ -88,7 +117,6 @@ class Uact {
     let that = this;
 
     function actionHandler(e) {
-      let queryString = wu.win.location.search.substring(1);
       let queryTemp = wu.queryParseString(queryString);
       let query = {};
 
@@ -112,7 +140,7 @@ class Uact {
       let event = e || that.win.event;
       let target = event.target || event.srcElement;
       let btn = target.closest('button');
-      let evt = {query: query, category: query.utm_campaign + '_' + wu.win.location.hostname, value: 1 };
+      let evt = {query: query, category: query.utm_campaign, value: 1 };
       let tagName = (target.tagName + '').toLowerCase();
 
       if (tagName === 'input') {
@@ -156,7 +184,7 @@ class Uact {
       // track event in our own analytics
       if (that._brxua) {
         let image = new Image(1, 1);
-        let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category, cb: (new Date().getTime()) };
+        let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category + '_' + wu.win.location.hostname, cb: (new Date().getTime()) };
 
         if (!uae.ea) {
           uae = wu.del(uae.ea);
