@@ -150,7 +150,14 @@ class Uact {
         let image = new Image(1, 1);
         let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category, cb: (new Date().getTime()) };
 
-        image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae);
+        if (!uae.ea) {
+          uae = wu.del(uae.ea);
+        }
+        if (!uae.el) {
+          uae = wu.del(uae.el);
+        }
+
+        image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae) + '&' + queryString;
       }
 
       // track google tag manager
@@ -172,6 +179,7 @@ class Uact {
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
+    wu.addEvent(wu.doc, 'change', actionHandler);
   }
 }
 
