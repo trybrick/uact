@@ -94,7 +94,10 @@ class Uact {
           let parts = oldHref.split('#');
 
           // exit if javascript or bad href
-          if (parts[0].length <= 0 || /\w+:\w+/gi.test(oldHref) || oldHref.toLowerCase().indexOf('utm_') > -1) {
+          if (parts[0].length <= 0 || 
+            /\w+:\w+/gi.test(oldHref) || 
+            oldHref.toLowerCase().indexOf('javascript:') > -1 || 
+            oldHref.toLowerCase().indexOf('utm_') > -1) {
             that.log(`update skip [${oldHref}]`);
             return;
           }
