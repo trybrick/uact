@@ -90,7 +90,7 @@ class Uact {
       that.log(`begin updating anchors`);
       wu.win.jQuery(wu.doc).ready(() => {
         wu.each(wu.win.jQuery('a'), (v, k) => {
-          let oldHref = wu.getAttr(v, 'href');
+          let oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
           let parts = oldHref.split('#');
 
           // exit if javascript or bad href
@@ -108,7 +108,7 @@ class Uact {
           }
 
           that.log(`update from [${oldHref}] to [${parts[0]}]`);
-          wu.setAttr('href', parts[0]);
+          wu.setAttr(v, 'href', parts[0]);
         });
       });
     }
@@ -154,6 +154,9 @@ class Uact {
         if (targetType === 'submit' || targetType === 'button') {
           evt.action = target.name || target.id || e.type || 'button action';
           evt.label = target.value;
+        } else {
+          that.log(`exiting from ${e.type} - ignoring input type ${targetType}`);
+          return;
         }
       } else if (tagName === 'select' && target.options && target.selectedIndex) {
         let opt = target.options[target.selectedIndex];
@@ -183,6 +186,11 @@ class Uact {
         evt.label = a.textContent || a.innerText;
       }
 
+      if (!evt.action) {
+        that.log(`exiting from ${e.type} - no action to log`);
+        return;
+      }
+
       that.log('triggering...');
       that.log(evt);
 
@@ -192,10 +200,10 @@ class Uact {
         let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category + '_' + wu.win.location.hostname, cb: (new Date().getTime()) };
 
         if (!uae.ea) {
-          uae = wu.del(uae.ea);
+          uae = wu.del(uae, 'ea');
         }
         if (!uae.el) {
-          uae = wu.del(uae.el);
+          uae = wu.del(uae, 'el');
         }
 
         image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae) + '&' + queryString;
