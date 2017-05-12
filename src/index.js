@@ -112,7 +112,7 @@ class Uact {
       let event = e || that.win.event;
       let target = event.target || event.srcElement;
       let btn = target.closest('button');
-      let evt = {query: query, category: query.utm_campaign, value: 1 };
+      let evt = {query: query, category: query.utm_campaign + '_' + wu.win.location.hostname, value: 1 };
       let tagName = (target.tagName + '').toLowerCase();
 
       if (tagName === 'input') {
