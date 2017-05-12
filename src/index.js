@@ -58,6 +58,10 @@ class Uact {
   init() {
     let that = this;
 
+    if (opts.debug) {
+      wu.debug.enable(opts.debug);
+    }
+
     that.setupHandlers();
 
 /*eslint-disable */
@@ -90,7 +94,8 @@ class Uact {
           let parts = oldHref.split('#');
 
           // exit if javascript or bad href
-          if (oldHref.length <= 0 || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
+          if (parts[0].length <= 0 || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
+            that.log(`update skip [${oldHref}]`);
             return;
           }
 
@@ -103,7 +108,7 @@ class Uact {
           }
 
           that.log(`update from [${oldHref}] to [${parts[0]}]`);
-          this.href = parts[0];
+          wu.setAttr('href', parts[0]);
         });
       });
     }

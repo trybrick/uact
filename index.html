@@ -18,25 +18,5 @@
   <button type="button">test button2</button><br />
   <a href="#test"><b>test anchor</b></a><br />
   <a href="#test2">test anchor2</a><br />
-  <script>
-    window.uact.wu.debug.enable('*');
-    var coupons = [];
-    var isDebug = location.search == "?debug";
-    if (isDebug) {
-      $('#log').html("");
-      if (typeof console != "undefined")
-        if (typeof console.log != 'undefined')
-          console.olog = console.log;
-        else
-          console.olog = function() {};
-
-        console.log = function(message) {
-        console.olog(message);
-        msg = message.replace(/%c/gi, '');
-        $('#log').append('<li>' + msg + '</li>');
-      };
-      console.error = console.debug = console.info =  console.log;
-    }
-  </script>
 </body>
 </html>
