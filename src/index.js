@@ -10,6 +10,11 @@ if (!currentScript) {
 }
 
 let opts = wu.getAttrs(currentScript);
+let scriptQuery = currentScript.src.split('?')[1];
+
+if (scriptQuery) {
+  opts = wu.extend(opts, wu.queryParseString(scriptQuery));
+}
 
 if (wu.win.Element && !wu.win.Element.prototype.closest) {
   wu.win.Element.prototype.closest = (s) => {
@@ -70,7 +75,7 @@ class Uact {
         })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
       }
 
-      ga('create', opts.ga, 'auto');
+      ga('create', opts.ga, 'auto', {'name': 'uact'});
     }
 /*eslint-enable */
 
@@ -130,6 +135,9 @@ class Uact {
       } else if (e.type === 'change') {
         that.log('exiting from non-select change event');
         return;
+      } else if (e.type === 'submit') {
+        evt.action = 'submit action';
+        evt.label = target.action;
       } else {
         let a = target.closest('a');
 
@@ -174,12 +182,16 @@ class Uact {
       // track google analytics
       if (typeof (wu.win.ga) !== 'undefined') {
         wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
+        if (opts.ga) {
+          wu.win.ga('uact.send', 'event', evt.category, evt.action, evt.label, evt.query);
+        }
       }
     }
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
     wu.addEvent(wu.doc, 'change', actionHandler);
+    wu.addEvent(wu.doc, 'submit', actionHandler);
   }
 }
 
