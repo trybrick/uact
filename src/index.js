@@ -82,7 +82,14 @@ class Uact {
         })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
       }
 
-      ga('create', opts.ga, 'auto', {'name': 'uact'});
+      function createGaUact() {
+        if (typeof (wu.win.ga) === 'undefined') {
+          setTimeout(createGaUact, 200);
+        }
+        ga('create', opts.ga, 'auto', {'name': 'uact'});
+      }
+      
+      createGaUact();
     }
 /*eslint-enable */
 
