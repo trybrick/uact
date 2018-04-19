@@ -82,7 +82,14 @@ class Uact {
         })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
       }
 
-      ga('create', opts.ga, 'auto', {'name': 'uact'});
+      let myInterval = setInterval(function() {
+        if (typeof (wu.win.ga) != 'undefined') {
+          clearInterval(myInterval);
+          ga('create', opts.ga, 'auto', {'name': 'uact'});
+        }
+
+      }, 500);      
+
     }
 /*eslint-enable */
 
