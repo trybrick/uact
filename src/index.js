@@ -232,10 +232,10 @@ class Uact {
 
       // track google analytics
       if (typeof (wu.win.ga) !== 'undefined') {
-        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
         if (opts.ga) {
           wu.win.ga('uact.send', 'event', evt.category, evt.action, evt.label, evt.query);
         }
+        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
       }
     }
 
