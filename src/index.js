@@ -231,7 +231,7 @@ class Uact {
       if (typeof (wu.win.dataLayer) !== 'undefined') {
         const dataLayer = wu.win.dataLayer;
         // use gtag logic allow pushing data to both gtag and GTM
-        const gtag = window.gtag || function () {dataLayer.push(arguments);};
+        const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
         gtag('event', evt.action, {
           'event_category': evt.category,
