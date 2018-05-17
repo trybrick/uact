@@ -1,17 +1,18 @@
 import Wu from 'wu';
 
-let wu = new Wu();
+const wu = new Wu();
 let currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
 
 if (!currentScript) {
-  let scripts = wu.doc.getElementsByTagName('script');
+  const scripts = wu.doc.getElementsByTagName('script');
 
   currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
 }
 
+const scriptQuery = currentScript.src.split('?')[1];
+const queryString = (wu.win.location.search + '').substring(1);
+
 let opts = wu.getAttrs(currentScript);
-let scriptQuery = currentScript.src.split('?')[1];
-let queryString = (wu.win.location.search + '').substring(1);
 
 if (scriptQuery) {
   opts = wu.extend(opts, wu.queryParseString(scriptQuery));
@@ -56,7 +57,7 @@ class Uact {
    * @param  {object} opts options
    */
   init() {
-    let that = this;
+    const that = this;
 
     if (opts.debug) {
       wu.debug.enable(opts.debug);
@@ -97,8 +98,8 @@ class Uact {
       that.log(`begin updating anchors`);
       wu.win.jQuery(wu.doc).ready(() => {
         wu.each(wu.win.jQuery('a'), (v, k) => {
-          let oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
-          let parts = oldHref.split('#');
+          const oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
+          const parts = oldHref.split('#');
 
           // exit if javascript or bad href
           if (parts[0].length <= 0 || 
@@ -129,11 +130,11 @@ class Uact {
    * setup action handlers
    */
   setupHandlers() {
-    let that = this;
+    const that = this;
 
     function actionHandler(e) {
-      let queryTemp = wu.queryParseString(queryString);
-      let query = {};
+      const queryTemp = wu.queryParseString(queryString);
+      const query = {};
 
       // normalize query string key to lowercase
       wu.each(queryTemp, (v, k) => {
@@ -152,14 +153,14 @@ class Uact {
       }
 /*eslint-enable */
 
-      let event = e || that.win.event;
-      let target = event.target || event.srcElement;
-      let btn = target.closest('button');
-      let evt = {query: query, category: query.utm_campaign, value: 1 };
-      let tagName = (target.tagName + '').toLowerCase();
+      const event = e || that.win.event;
+      const target = event.target || event.srcElement;
+      const btn = target.closest('button');
+      const evt = {query: query, category: query.utm_campaign, value: 1 };
+      const tagName = (target.tagName + '').toLowerCase();
 
       if (tagName === 'input') {
-        let targetType = target.type.toLowerCase();
+        const targetType = target.type.toLowerCase();
 
         if (targetType === 'submit' || targetType === 'button') {
           evt.action = target.name || target.id || e.type || 'button action';
@@ -169,7 +170,7 @@ class Uact {
           return;
         }
       } else if (tagName === 'select' && target.options && target.selectedIndex) {
-        let opt = target.options[target.selectedIndex];
+        const opt = target.options[target.selectedIndex];
         
         if (opt) {
           evt.action = target.name || target.id || e.type || 'select action';
@@ -185,7 +186,7 @@ class Uact {
         evt.action = 'submit action';
         evt.label = target.action;
       } else {
-        let a = target.closest('a');
+        const a = target.closest('a');
 
         if (!a) {
           that.log(`exiting from ${e.type} event with no valid parent element`);
@@ -206,8 +207,15 @@ class Uact {
 
       // track event in our own analytics
       if (that._brxua) {
-        let image = new Image(1, 1);
-        let uae = { ea: evt.action, el: evt.label, ev: evt.value, ec: evt.category + '_' + wu.win.location.hostname, cb: (new Date().getTime()) };
+        const image = new Image(1, 1);
+
+        let uae = { 
+          ea: evt.action, 
+          el: evt.label, 
+          ev: evt.value, 
+          ec: evt.category + '_' + wu.win.location.hostname, 
+          cb: (new Date().getTime())
+        };
 
         if (!uae.ea) {
           uae = wu.del(uae, 'ea');
@@ -221,21 +229,20 @@ class Uact {
 
       // track google tag manager
       if (typeof (wu.win.dataLayer) !== 'undefined') {
-        wu.win.dataLayer.push({
-          'category': evt.category,
-          'action': evt.action,
-          'label': evt.label,
-          'value': evt.value,
-          'query': evt.query,
-          'event': 'uact'});
+        const dataLayer = wu.win.dataLayer;
+        // use gtag logic allow pushing data to both gtag and GTM
+        const gtag = window.gtag || function () {dataLayer.push(arguments);};
+
+        gtag('event', evt.action, {
+          'event_category': evt.category,
+          'event_label': evt.label,
+          'value': evt.value
+        });
       }
 
-      // track google analytics
+      // track classic google analytics
       if (typeof (wu.win.ga) !== 'undefined') {
-        if (opts.ga) {
-          wu.win.ga('uact.send', 'event', evt.category, evt.action, evt.label, evt.query);
-        }
-        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
+        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.value);
       }
     }
 
