@@ -211,9 +211,13 @@ class Uact {
         });
       }
 
-      // track classic google analytics
+      // send to all classic analytic named trackers
       if (typeof (wu.win.ga) !== 'undefined') {
-        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.value);
+        const trackers = wu.win.ga.getAll();
+
+        trackers.forEach(tracker => {
+          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label, evt.value);
+        });
       }
     }
 
