@@ -227,12 +227,12 @@ class Uact {
         image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae) + '&' + queryString;
       }
 
-      const dataLayer = wu.win.dataLayer || [];
-      // use gtag logic allow pushing data to both gtag and GTM
-      const gtag = window.gtag || function () {dataLayer.push(arguments);};
-
       // track google tag manager
       if (typeof (wu.win.dataLayer) !== 'undefined') {
+        const dataLayer = wu.win.dataLayer;
+        // use gtag logic allow pushing data to both gtag and GTM
+        const gtag = window.gtag || function () {dataLayer.push(arguments);};
+
         gtag('event', evt.action, {
           'event_category': evt.category,
           'event_label': evt.label,
@@ -242,7 +242,7 @@ class Uact {
 
       // track classic google analytics
       if (typeof (wu.win.ga) !== 'undefined') {
-        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.query);
+        wu.win.ga('send', 'event', evt.category, evt.action, evt.label, evt.value);
       }
     }
 
