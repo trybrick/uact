@@ -1,4 +1,4 @@
-import Wu from 'wu';
+const Wu = require('Wu');
 
 const wu = new Wu();
 let currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
@@ -27,7 +27,7 @@ if (wu.win.Element && !wu.win.Element.prototype.closest) {
     do {
       i = matches.length;
       while (--i >= 0 && matches.item(i) !== el) {};
-    } while ((i < 0) && (el = el.parentElement)); 
+    } while ((i < 0) && (el = el.parentElement));
     return el;
   };
 }
@@ -66,16 +66,16 @@ class Uact {
     that.setupHandlers();
 
     if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
-      that.log(`begin updating anchors`);
+      that.log('begin updating anchors');
       wu.win.jQuery(wu.doc).ready(() => {
         wu.each(wu.win.jQuery('a'), (v, k) => {
           const oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
           const parts = oldHref.split('#');
 
           // exit if javascript or bad href
-          if (parts[0].length <= 0 || 
-            /\w+:\w+/gi.test(oldHref) || 
-            oldHref.toLowerCase().indexOf('javascript:') > -1 || 
+          if (parts[0].length <= 0 ||
+            /\w+:\w+/gi.test(oldHref) ||
+            oldHref.toLowerCase().indexOf('javascript:') > -1 ||
             oldHref.toLowerCase().indexOf('utm_') > -1) {
             that.log(`update skip [${oldHref}]`);
             return;
@@ -122,7 +122,7 @@ class Uact {
         that.log('exiting: invalid utm_campaign');
         return;
       }
-/*eslint-enable */
+      /* eslint-enable */
 
       const event = e || that.win.event;
       const target = event.target || event.srcElement;
@@ -142,7 +142,7 @@ class Uact {
         }
       } else if (tagName === 'select' && target.options && target.selectedIndex) {
         const opt = target.options[target.selectedIndex];
-        
+
         if (opt) {
           evt.action = target.name || target.id || e.type || 'select action';
           evt.label = `${opt.value}_${opt.text}`;
@@ -180,11 +180,11 @@ class Uact {
       if (that._brxua) {
         const image = new Image(1, 1);
 
-        let uae = { 
-          ea: evt.action, 
-          el: evt.label, 
-          ev: evt.value, 
-          ec: evt.category + '_' + wu.win.location.hostname, 
+        let uae = {
+          ea: evt.action,
+          el: evt.label,
+          ev: evt.value,
+          ec: evt.category + '_' + wu.win.location.hostname,
           cb: (new Date().getTime())
         };
 
