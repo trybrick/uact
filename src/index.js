@@ -102,28 +102,27 @@ class Uact {
    */
   setupHandlers() {
     const that = this;
+    const queryTemp = wu.queryParseString(queryString);
+    const query = {};
 
-    function actionHandler(e) {
-      const queryTemp = wu.queryParseString(queryString);
-      const query = {};
-
-      // normalize query string key to lowercase
-      wu.each(queryTemp, (v, k) => {
-        query[k.toLowerCase()] = v;
-      });
+    // normalize query string key to lowercase
+    wu.each(queryTemp, (v, k) => {
+      query[k.toLowerCase()] = v;
+    });
 
 /*eslint-disable */
-      // tom mistake come back to bite me
-      if (query.utm_name) {
-        query.utm_campaign = query.utm_name;
-      }
+    // tom mistake come back to bite me
+    if (query.utm_name) {
+      query.utm_campaign = query.utm_name;
+    }
 
-      if (wu.isNull(query.utm_campaign, '').length < 2) {
-        that.log('exiting: invalid utm_campaign');
-        return;
-      }
-      /* eslint-enable */
+    if (wu.isNull(query.utm_campaign, '').length < 2) {
+      that.log('exiting: invalid utm_campaign');
+      return;
+    }
+    /* eslint-enable */
 
+    function actionHandler(e) {
       const event = e || that.win.event;
       const target = event.target || event.srcElement;
       const btn = target.closest('button');
@@ -225,6 +224,12 @@ class Uact {
     wu.addEvent(wu.doc, 'tap', actionHandler);
     wu.addEvent(wu.doc, 'change', actionHandler);
     wu.addEvent(wu.doc, 'submit', actionHandler);
+
+    // for some reason, tel does not propagate
+    // so we track it separately
+    if (typeof (wu.win.jQuery) !== 'undefined') {
+      wu.win.jQuery('a[href^="tel:"').click(actionHandler);
+    }
   }
 }
 
