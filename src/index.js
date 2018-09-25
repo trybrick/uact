@@ -72,25 +72,27 @@ class Uact {
           const oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
           const parts = oldHref.split('#');
 
-          // exit if javascript or bad href
-          if (parts[0].length <= 0 ||
-            /\w+:\w+/gi.test(oldHref) ||
-            oldHref.toLowerCase().indexOf('javascript:') > -1 ||
-            oldHref.toLowerCase().indexOf('utm_') > -1) {
-            that.log(`update skip [${oldHref}]`);
-            return;
+          if (oldHref.indexOf('//') > 0) {
+            // exit if javascript or bad href
+            if (parts[0].length <= 0 ||
+              /\w+:\w+/gi.test(oldHref) ||
+              oldHref.toLowerCase().indexOf('javascript:') > -1 ||
+              oldHref.toLowerCase().indexOf('utm_') > -1) {
+              that.log(`update skip [${oldHref}]`);
+              return;
+            }
+
+            // append & instead of ? if existing query string
+            parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryString;
+
+            // finally add back hash
+            if (parts[1]) {
+              parts[0] = parts[0] + '#' + parts[1];
+            }
+
+            that.log(`update from [${oldHref}] to [${parts[0]}]`);
+            wu.setAttr(v, 'href', parts[0]);
           }
-
-          // append & instead of ? if existing query string
-          parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryString;
-
-          // finally add back hash
-          if (parts[1]) {
-            parts[0] = parts[0] + '#' + parts[1];
-          }
-
-          that.log(`update from [${oldHref}] to [${parts[0]}]`);
-          wu.setAttr(v, 'href', parts[0]);
         });
       });
     }
