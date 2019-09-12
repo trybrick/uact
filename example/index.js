@@ -1,8 +1,3 @@
-/*!
- *  uact.js - v0.2.2
- *  build: Tue Sep 25 2018 15:20:25 GMT-0500 (CDT)
- *  UTM auto click tracker
- */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -12,7 +7,7 @@
 		exports["uact"] = factory();
 	else
 		root["uact"] = factory();
-})(typeof self !== 'undefined' ? self : this, function() {
+})(window, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -51,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -72,294 +87,20 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/";
+/******/
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+/******/ ({
 
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Wu = __webpack_require__(2);
-
-var wu = new Wu();
-var currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
-
-if (!currentScript) {
-  var scripts = wu.doc.getElementsByTagName('script');
-
-  currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
-}
-
-var scriptQuery = currentScript.src.split('?')[1];
-var queryString = (wu.win.location.search + '').substring(1);
-
-var opts = wu.getAttrs(currentScript);
-
-if (scriptQuery) {
-  opts = wu.extend(opts, wu.queryParseString(scriptQuery));
-}
-
-if (wu.win.Element && !wu.win.Element.prototype.closest) {
-  wu.win.Element.prototype.closest = function (s) {
-    var matches = (undefined.document || wu.win.ownerDocument).querySelectorAll(s),
-        i = void 0,
-        el = undefined;
-
-    do {
-      i = matches.length;
-      while (--i >= 0 && matches.item(i) !== el) {};
-    } while (i < 0 && (el = el.parentElement));
-    return el;
-  };
-}
-
-/**
- * UTM auto click tracker
- */
-
-var Uact = function () {
-  function Uact() {
-    _classCallCheck(this, Uact);
-
-    this.wu = wu;
-    this.log = wu.debug('uact');
-    this._name = 'Uact';
-    this._brxua = '79697394-26';
-    this.init();
-  }
-
-  /**
-   * get the name of the library
-   * @return {string} library name
-   */
-
-
-  _createClass(Uact, [{
-    key: 'init',
-
-
-    /**
-     * init function
-     * @param  {object} opts options
-     */
-    value: function init() {
-      var that = this;
-
-      if (opts.debug) {
-        wu.debug.enable(opts.debug);
-      }
-
-      that.setupHandlers();
-
-      if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
-        that.log('begin updating anchors');
-        wu.win.jQuery(wu.doc).ready(function () {
-          wu.each(wu.win.jQuery('a'), function (v, k) {
-            var oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
-            var parts = oldHref.split('#');
-
-            if (oldHref.indexOf('//') > 0) {
-              // exit if javascript or bad href
-              if (parts[0].length <= 0 || /\w+:\w+/gi.test(oldHref) || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
-                that.log('update skip [' + oldHref + ']');
-                return;
-              }
-
-              // append & instead of ? if existing query string
-              parts[0] = parts[0] + (parts[0].indexOf('?') < 0 ? '?' : '&') + queryString;
-
-              // finally add back hash
-              if (parts[1]) {
-                parts[0] = parts[0] + '#' + parts[1];
-              }
-
-              that.log('update from [' + oldHref + '] to [' + parts[0] + ']');
-              wu.setAttr(v, 'href', parts[0]);
-            }
-          });
-        });
-      }
-    }
-
-    /**
-     * setup action handlers
-     */
-
-  }, {
-    key: 'setupHandlers',
-    value: function setupHandlers() {
-      var that = this;
-      var queryTemp = wu.queryParseString(queryString);
-      var query = {};
-
-      // normalize query string key to lowercase
-      wu.each(queryTemp, function (v, k) {
-        query[k.toLowerCase()] = v;
-      });
-
-      /*eslint-disable */
-      // tom mistake come back to bite me
-      if (query.utm_name) {
-        query.utm_campaign = query.utm_name;
-      }
-
-      if (wu.isNull(query.utm_campaign, '').length < 2) {
-        that.log('exiting: invalid utm_campaign');
-        return;
-      }
-      /* eslint-enable */
-
-      function actionHandler(e) {
-        var event = e || that.win.event;
-        var target = event.target || event.srcElement;
-        var btn = target.closest('button');
-        var evt = { query: query, category: query.utm_campaign, value: 1 };
-        var tagName = (target.tagName + '').toLowerCase();
-
-        if (tagName === 'input') {
-          var targetType = target.type.toLowerCase();
-
-          if (targetType === 'submit' || targetType === 'button') {
-            evt.action = target.name || target.id || e.type || 'button action';
-            evt.label = target.value;
-          } else {
-            that.log('exiting from ' + e.type + ' - ignoring input type ' + targetType);
-            return;
-          }
-        } else if (tagName === 'select' && target.options && target.selectedIndex) {
-          var opt = target.options[target.selectedIndex];
-
-          if (opt) {
-            evt.action = target.name || target.id || e.type || 'select action';
-            evt.label = opt.value + '_' + opt.text;
-          }
-        } else if (btn) {
-          evt.action = btn.name || btn.id || e.type || 'button action';
-          evt.label = btn.textContent || btn.innerText;
-        } else if (e.type === 'change') {
-          that.log('exiting from non-select change event');
-          return;
-        } else if (e.type === 'submit') {
-          evt.action = 'submit action';
-          evt.label = target.action;
-        } else {
-          var a = target.closest('a');
-
-          if (!a) {
-            that.log('exiting from ' + e.type + ' event with no valid parent element');
-            return;
-          }
-
-          evt.action = wu.getAttr(a, 'href');
-          evt.label = a.textContent || a.innerText;
-        }
-
-        if (!evt.action) {
-          that.log('exiting from ' + e.type + ' - no action to log');
-          return;
-        }
-
-        that.log('triggering...');
-        that.log(evt);
-
-        // track event in our own analytics
-        if (that._brxua) {
-          var image = new Image(1, 1);
-
-          var uae = {
-            ea: evt.action,
-            el: evt.label,
-            ev: evt.value,
-            ec: evt.category + '_' + wu.win.location.hostname,
-            cb: new Date().getTime()
-          };
-
-          if (!uae.ea) {
-            uae = wu.del(uae, 'ea');
-          }
-          if (!uae.el) {
-            uae = wu.del(uae, 'el');
-          }
-
-          image.src = 'https://pi.brickinc.net/ua/' + that._brxua + '?' + wu.queryStringify(uae) + '&' + queryString;
-        }
-
-        // track google tag manager
-        if (typeof wu.win.dataLayer !== 'undefined') {
-          var dataLayer = wu.win.dataLayer;
-          // use gtag logic allow pushing data to both gtag and GTM
-          var gtag = wu.win.gtag || function () {
-            dataLayer.push(arguments);
-          };
-
-          gtag('event', evt.action, {
-            'event_category': evt.category,
-            'event_label': evt.label,
-            'value': evt.value
-          });
-        }
-
-        // send to all classic analytic named trackers
-        if (typeof wu.win.ga !== 'undefined') {
-          var trackers = wu.win.ga.getAll();
-
-          trackers.forEach(function (tracker) {
-            wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label, evt.value);
-          });
-        }
-      }
-
-      wu.addEvent(wu.doc, 'click', actionHandler);
-      wu.addEvent(wu.doc, 'tap', actionHandler);
-      wu.addEvent(wu.doc, 'change', actionHandler);
-      wu.addEvent(wu.doc, 'submit', actionHandler);
-
-      // for some reason, tel does not propagate
-      // so we track it separately
-      if (typeof wu.win.jQuery !== 'undefined') {
-        wu.win.jQuery('a[href^="tel:"').click(actionHandler);
-      }
-    }
-  }, {
-    key: 'name',
-    get: function get() {
-      return this._name;
-    }
-  }]);
-
-  return Uact;
-}();
-
-if (typeof wu.win.uact === 'undefined') {
-  wu.win.uact = new Uact();
-}
-
-exports.default = wu.win.uact;
-module.exports = exports['default'];
-
-/***/ }),
-/* 2 */
+/***/ "./node_modules/Wu/lib/wu.js":
+/*!***********************************!*\
+  !*** ./node_modules/Wu/lib/wu.js ***!
+  \***********************************/
+/*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -370,12 +111,7 @@ module.exports = exports['default'];
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
 		module.exports = factory();
-	else if(typeof define === 'function' && define.amd)
-		define("Wu", [], factory);
-	else if(typeof exports === 'object')
-		exports["Wu"] = factory();
-	else
-		root["Wu"] = factory();
+	else {}
 })(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -2857,7 +2593,316 @@ function plural(ms, n, name) {
 });
 //# sourceMappingURL=wu.js.map
 
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var _this = undefined;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var Wu = __webpack_require__(/*! Wu */ "./node_modules/Wu/lib/wu.js");
+
+var wu = new Wu();
+var currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
+
+if (!currentScript) {
+  var scripts = wu.doc.getElementsByTagName('script');
+  currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
+}
+
+var scriptQuery = currentScript.src.split('?')[1];
+var queryString = (wu.win.location.search + '').substring(1);
+var opts = wu.getAttrs(currentScript);
+
+if (scriptQuery) {
+  opts = wu.extend(opts, wu.queryParseString(scriptQuery));
+}
+
+if (wu.win.Element && !wu.win.Element.prototype.closest) {
+  wu.win.Element.prototype.closest = function (s) {
+    var matches = (_this.document || wu.win.ownerDocument).querySelectorAll(s),
+        i,
+        el = _this;
+
+    do {
+      i = matches.length;
+
+      while (--i >= 0 && matches.item(i) !== el) {}
+
+      ;
+    } while (i < 0 && (el = el.parentElement));
+
+    return el;
+  };
+}
+/**
+ * UTM auto click tracker
+ */
+
+
+var Uact =
+/*#__PURE__*/
+function () {
+  function Uact() {
+    _classCallCheck(this, Uact);
+
+    this.wu = wu;
+    this.log = wu.debug('uact');
+    this._name = 'Uact';
+    this._brxua = '79697394-26';
+    this.init();
+  }
+  /**
+   * get the name of the library
+   * @return {string} library name
+   */
+
+
+  _createClass(Uact, [{
+    key: "init",
+
+    /**
+     * init function
+     * @param  {object} opts options
+     */
+    value: function init() {
+      var that = this;
+
+      if (opts.debug) {
+        wu.debug.enable(opts.debug);
+      }
+
+      var query = that.setupHandlers();
+
+      if (!queryString) {
+        queryString = wu.queryStringify(query);
+      }
+
+      if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
+        that.log('begin updating anchors');
+        wu.win.jQuery(wu.doc).ready(function () {
+          wu.each(wu.win.jQuery('a'), function (v, k) {
+            var oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
+            var parts = oldHref.split('#');
+
+            if (oldHref.indexOf('//') > 0) {
+              // exit if javascript or bad href
+              if (parts[0].length <= 0 || /\w+:\w+/gi.test(oldHref) || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
+                that.log("update skip [".concat(oldHref, "]"));
+                return;
+              } // append & instead of ? if existing query string
+
+
+              parts[0] = parts[0] + (parts[0].indexOf('?') < 0 ? '?' : '&') + queryString; // finally add back hash
+
+              if (parts[1]) {
+                parts[0] = parts[0] + '#' + parts[1];
+              }
+
+              that.log("update from [".concat(oldHref, "] to [").concat(parts[0], "]"));
+              wu.setAttr(v, 'href', parts[0]);
+            }
+          });
+        });
+      }
+    }
+    /**
+     * setup action handlers
+     */
+
+  }, {
+    key: "setupHandlers",
+    value: function setupHandlers() {
+      var that = this;
+      var queryTemp = wu.queryParseString(queryString);
+      var query = {}; // normalize query string key to lowercase
+
+      wu.each(queryTemp, function (v, k) {
+        query[k.toLowerCase()] = v;
+      }); // store query string in cookie if utm_campaign exists
+
+      if (query.utm_campaign) {
+        // overide existing cookie
+        wu.cookie('brxutmquery', JSON.stringify(query));
+      } else {
+        try {
+          var myq = wu.cookie('brxutmquery');
+
+          if (myq && myq.indexOf('{') > -1) {
+            query = JSON.parse(myq);
+          }
+        } catch (e) {
+          wu.debug(e);
+        }
+      }
+      /*eslint-disable */
+      // tom mistake come back to bite me
+
+
+      if (query.utm_name) {
+        query.utm_campaign = query.utm_name;
+      }
+
+      if (wu.isNull(query.utm_campaign, '').length < 2) {
+        that.log('exiting: invalid utm_campaign');
+        return query;
+      }
+      /* eslint-enable */
+
+
+      function actionHandler(e) {
+        var event = e || that.win.event;
+        var target = event.target || event.srcElement;
+        var btn = target.closest('button');
+        var evt = {
+          query: query,
+          category: query.utm_campaign,
+          value: 1
+        };
+        var tagName = (target.tagName + '').toLowerCase();
+
+        if (tagName === 'input') {
+          var targetType = target.type.toLowerCase();
+
+          if (targetType === 'submit' || targetType === 'button') {
+            evt.action = target.name || target.id || e.type || 'button action';
+            evt.label = target.value;
+          } else {
+            that.log("exiting from ".concat(e.type, " - ignoring input type ").concat(targetType));
+            return;
+          }
+        } else if (tagName === 'select' && target.options && target.selectedIndex) {
+          var opt = target.options[target.selectedIndex];
+
+          if (opt) {
+            evt.action = target.name || target.id || e.type || 'select action';
+            evt.label = "".concat(opt.value, "_").concat(opt.text);
+          }
+        } else if (btn) {
+          evt.action = btn.name || btn.id || e.type || 'button action';
+          evt.label = btn.textContent || btn.innerText;
+        } else if (e.type === 'change') {
+          that.log('exiting from non-select change event');
+          return;
+        } else if (e.type === 'submit') {
+          evt.action = 'submit action';
+          evt.label = target.action;
+        } else {
+          var a = target.closest('a');
+
+          if (!a) {
+            that.log("exiting from ".concat(e.type, " event with no valid parent element"));
+            return;
+          }
+
+          evt.action = wu.getAttr(a, 'href');
+          evt.label = a.textContent || a.innerText;
+        }
+
+        if (!evt.action) {
+          that.log("exiting from ".concat(e.type, " - no action to log"));
+          return;
+        }
+
+        that.log('triggering...');
+        that.log(evt); // track event in our own analytics
+
+        if (that._brxua) {
+          var image = new Image(1, 1);
+          var uae = {
+            ea: evt.action,
+            el: evt.label,
+            ev: evt.value,
+            ec: evt.category + '_' + wu.win.location.hostname,
+            cb: new Date().getTime()
+          };
+
+          if (!uae.ea) {
+            uae = wu.del(uae, 'ea');
+          }
+
+          if (!uae.el) {
+            uae = wu.del(uae, 'el');
+          }
+
+          image.src = "https://pi.brickinc.net/ua/".concat(that._brxua, "?") + wu.queryStringify(uae) + '&' + queryString;
+        } // track google tag manager
+
+
+        if (typeof wu.win.dataLayer !== 'undefined') {
+          var dataLayer = wu.win.dataLayer; // use gtag logic allow pushing data to both gtag and GTM
+
+          var gtag = wu.win.gtag || function () {
+            dataLayer.push(arguments);
+          };
+
+          gtag('event', evt.action, {
+            'event_category': evt.category,
+            'event_label': evt.label,
+            'value': evt.value
+          });
+        } // send to all classic analytic named trackers
+
+
+        if (typeof wu.win.ga !== 'undefined') {
+          var trackers = wu.win.ga.getAll();
+          trackers.forEach(function (tracker) {
+            wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label, evt.value);
+          });
+        }
+      } // end actionHandler
+
+
+      wu.addEvent(wu.doc, 'click', actionHandler);
+      wu.addEvent(wu.doc, 'tap', actionHandler);
+      wu.addEvent(wu.doc, 'change', actionHandler);
+      wu.addEvent(wu.doc, 'submit', actionHandler); // for some reason, tel does not propagate
+      // so we track it separately
+
+      if (typeof wu.win.jQuery !== 'undefined') {
+        wu.win.jQuery('a[href^="tel:"').click(actionHandler);
+      }
+
+      return query;
+    }
+  }, {
+    key: "name",
+    get: function get() {
+      return this._name;
+    }
+  }]);
+
+  return Uact;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (new Uact());
+
+/***/ }),
+
+/***/ 0:
+/*!****************************!*\
+  !*** multi ./src/index.js ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! /Users/tomnoogen/Desktop/work/brick/uact/src/index.js */"./src/index.js");
+
+
 /***/ })
-/******/ ]);
+
+/******/ });
 });
-//# sourceMappingURL=uact.js.map
+//# sourceMappingURL=index.js.map

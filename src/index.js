@@ -10,7 +10,7 @@ if (!currentScript) {
 }
 
 const scriptQuery = currentScript.src.split('?')[1];
-const queryString = (wu.win.location.search + '').substring(1);
+let queryString = (wu.win.location.search + '').substring(1);
 
 let opts = wu.getAttrs(currentScript);
 
@@ -63,7 +63,10 @@ class Uact {
       wu.debug.enable(opts.debug);
     }
 
-    that.setupHandlers();
+    const query = that.setupHandlers();
+    if (!queryString) {
+      queryString = wu.queryStringify(query);
+    }
 
     if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
       that.log('begin updating anchors');
@@ -105,12 +108,27 @@ class Uact {
   setupHandlers() {
     const that = this;
     const queryTemp = wu.queryParseString(queryString);
-    const query = {};
+    let query = {};
 
     // normalize query string key to lowercase
     wu.each(queryTemp, (v, k) => {
       query[k.toLowerCase()] = v;
     });
+
+    // store query string in cookie if utm_campaign exists
+    if (query.utm_campaign) {
+      // overide existing cookie
+      wu.cookie('brxutmquery', JSON.stringify(query));
+    } else {
+      try {
+        const myq = wu.cookie('brxutmquery');
+        if (myq && myq.indexOf('{') > -1) {
+          query = JSON.parse(myq);
+        }
+      } catch(e) {
+        wu.debug(e);
+      }
+    }
 
 /*eslint-disable */
     // tom mistake come back to bite me
@@ -120,7 +138,7 @@ class Uact {
 
     if (wu.isNull(query.utm_campaign, '').length < 2) {
       that.log('exiting: invalid utm_campaign');
-      return;
+      return query;
     }
     /* eslint-enable */
 
@@ -220,7 +238,7 @@ class Uact {
           wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label, evt.value);
         });
       }
-    }
+    } // end actionHandler
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
@@ -232,11 +250,9 @@ class Uact {
     if (typeof (wu.win.jQuery) !== 'undefined') {
       wu.win.jQuery('a[href^="tel:"').click(actionHandler);
     }
+
+    return query;
   }
 }
 
-if (typeof (wu.win.uact) === 'undefined') {
-  wu.win.uact = new Uact();
-}
-
-export default wu.win.uact;
+export default new Uact();
