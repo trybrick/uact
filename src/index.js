@@ -1,6 +1,6 @@
 const Wu = require('Wu');
-
 const wu = new Wu();
+
 let currentScript = wu.doc.querySelector('script[src*="uact.js"],script[src*="uact.min.js"]');
 
 if (!currentScript) {
@@ -9,9 +9,8 @@ if (!currentScript) {
   currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
 }
 
-
 const scriptQuery = currentScript ? currentScript.src.split('?')[1] : '';
-let queryString = (wu.win.location.search + '').substring(1);
+const queryString = (wu.win.location.search + '').substring(1);
 
 let opts = wu.getAttrs(currentScript);
 
@@ -54,6 +53,43 @@ class Uact {
   }
 
   /**
+   * get the Query String
+   * @param  {Boolean} asObject true to return as object
+   * @return query string or object
+   */
+  getUtmQuery(asObject = false) {
+    let query = {};
+
+    if (queryString) {
+      const queryTemp = wu.queryParseString(queryString);
+
+      // normalize query string key to lowercase
+      wu.each(queryTemp, (v, k) => {
+        query[k.toLowerCase()] = v;
+      });
+    }
+
+    // store query string in cookie if utm_campaign exists
+    if (query.utm_campaign) {
+      // overide existing cookie
+      wu.cookie('brxutmquery', JSON.stringify(query));
+    } else {
+      try {
+        const myq = wu.cookie('brxutmquery');
+
+        if (myq && myq.indexOf('{') > -1) {
+          query = JSON.parse(myq);
+        }
+
+      } catch (e) {
+        wu.debug(e);
+      }
+    }
+
+    return asObject ? query : wu.queryStringify(query);;
+  }
+
+  /**
    * init function
    * @param  {object} opts options
    */
@@ -64,12 +100,10 @@ class Uact {
       wu.debug.enable(opts.debug);
     }
 
-    const query = that.setupHandlers();
-    if (!queryString) {
-      queryString = wu.queryStringify(query);
-    }
+    that.setupHandlers();
+    const queryStr = that.getUtmQuery(false);
 
-    if (!opts.disableDeepTracking && wu.win.jQuery && queryString.indexOf('utm_') > -1) {
+    if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
       that.log('begin updating anchors');
       wu.win.jQuery(wu.doc).ready(() => {
         wu.each(wu.win.jQuery('a'), (v, k) => {
@@ -87,7 +121,7 @@ class Uact {
             }
 
             // append & instead of ? if existing query string
-            parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryString;
+            parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryStr;
 
             // finally add back hash
             if (parts[1]) {
@@ -108,28 +142,7 @@ class Uact {
    */
   setupHandlers() {
     const that = this;
-    const queryTemp = wu.queryParseString(queryString);
-    let query = {};
-
-    // normalize query string key to lowercase
-    wu.each(queryTemp, (v, k) => {
-      query[k.toLowerCase()] = v;
-    });
-
-    // store query string in cookie if utm_campaign exists
-    if (query.utm_campaign) {
-      // overide existing cookie
-      wu.cookie('brxutmquery', JSON.stringify(query));
-    } else {
-      try {
-        const myq = wu.cookie('brxutmquery');
-        if (myq && myq.indexOf('{') > -1) {
-          query = JSON.parse(myq);
-        }
-      } catch(e) {
-        wu.debug(e);
-      }
-    }
+    const query = that.getUtmQuery(true);
 
 /*eslint-disable */
     // tom mistake come back to bite me
