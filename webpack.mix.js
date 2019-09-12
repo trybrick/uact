@@ -10,7 +10,7 @@ const config = {
   },
   output: {
     path: path.resolve(public),
-    filename: 'index.js',
+    filename: 'uact.min.js',
     library: 'uact',
     libraryTarget: 'umd',
     umdNamedDefine: true

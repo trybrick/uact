@@ -2,7 +2,7 @@
   "name": "uact",
   "version": "0.3.0",
   "description": "UTM auto click tracker",
-  "main": "lib/index.js",
+  "main": "lib/uact.min.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/trybrick/uact.git"
