@@ -9,7 +9,8 @@ if (!currentScript) {
   currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
 }
 
-const scriptQuery = currentScript.src.split('?')[1];
+
+const scriptQuery = currentScript ? currentScript.src.split('?')[1] : '';
 let queryString = (wu.win.location.search + '').substring(1);
 
 let opts = wu.getAttrs(currentScript);
@@ -253,6 +254,6 @@ class Uact {
 
     return query;
   }
-}
+};
 
-export default new Uact();
+module.exports = new Uact();

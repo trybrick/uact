@@ -2599,12 +2599,10 @@ function plural(ms, n, name) {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-var _this = undefined;
+var _this = this;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -2622,7 +2620,7 @@ if (!currentScript) {
   currentScript = wu.doc.currentScript || scripts[scripts.length - 1];
 }
 
-var scriptQuery = currentScript.src.split('?')[1];
+var scriptQuery = currentScript ? currentScript.src.split('?')[1] : '';
 var queryString = (wu.win.location.search + '').substring(1);
 var opts = wu.getAttrs(currentScript);
 
@@ -2887,7 +2885,8 @@ function () {
   return Uact;
 }();
 
-/* harmony default export */ __webpack_exports__["default"] = (new Uact());
+;
+module.exports = new Uact();
 
 /***/ }),
 
