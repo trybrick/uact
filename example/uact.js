@@ -2,7 +2,7 @@
  * uact
  * UTM auto click tracker
 
- * @version v0.3.2
+ * @version v0.3.3
  * @author Tom Noogen
  * @homepage https://github.com/trybrick/uact
  * @repository https://github.com/trybrick/uact.git
@@ -189,8 +189,8 @@ function () {
 
     this.wu = wu;
     this.log = wu.debug('uact');
-    this._name = 'Uact';
-    this._brxua = '79697394-26';
+    this._name = 'Uact'; // this._brxua = '79697394-26';
+
     this.init();
   }
   /**
@@ -200,13 +200,40 @@ function () {
 
 
   _createClass(Uact, [{
-    key: "getUtmQuery",
+    key: "appendQuery",
+    value: function appendQuery(existing, queryStr) {
+      var that = this;
+      var oldHref = wu.isNull(existing, '/') || '/';
+      var parts = existing.split('#');
 
+      if (oldHref.indexOf('/') > -1) {
+        // exit if javascript or bad href
+        if (/\w+:\w+/gi.test(oldHref) || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
+          that.log("update skip [".concat(oldHref, "]"));
+          return existing;
+        } // append & instead of ? if existing query string
+
+
+        parts[0] = parts[0] + (parts[0].indexOf('?') < 0 ? '?' : '&') + queryStr; // finally add back hash
+
+        if (parts[1]) {
+          parts[0] = parts[0] + '#' + parts[1];
+        }
+
+        that.log("update from [".concat(oldHref, "] to [").concat(parts[0], "]"));
+        return parts[0];
+      }
+
+      return existing;
+    }
     /**
      * get the Query String
      * @param  {Boolean} asObject true to return as object
      * @return query string or object
      */
+
+  }, {
+    key: "getUtmQuery",
     value: function getUtmQuery() {
       var asObject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var query = {};
@@ -217,22 +244,23 @@ function () {
         wu.each(queryTemp, function (v, k) {
           query[k.toLowerCase()] = v;
         });
-      } // store query string in cookie if utm_campaign exists
+      }
 
+      try {
+        // store query string in cookie if utm_campaign exists
+        if (query.utm_campaign) {
+          wu.win.sessionStorage.setItem('brxutm', 'true'); // overide existing cookie
 
-      if (query.utm_campaign) {
-        // overide existing cookie
-        wu.cookie('brxutmquery', JSON.stringify(query));
-      } else {
-        try {
+          wu.cookie('brxutmquery', JSON.stringify(query));
+        } else {
           var myq = wu.cookie('brxutmquery');
 
           if (myq && myq.indexOf('{') > -1) {
             query = JSON.parse(myq);
           }
-        } catch (e) {
-          wu.debug(e);
         }
+      } catch (e) {
+        wu.debug(e);
       }
 
       return asObject ? query : wu.queryStringify(query);
@@ -258,28 +286,28 @@ function () {
       if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
         that.log('begin updating anchors');
         wu.win.jQuery(wu.doc).ready(function () {
-          wu.each(wu.win.jQuery('a'), function (v, k) {
-            var oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
-            var parts = oldHref.split('#');
+          try {
+            var sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
 
-            if (oldHref.indexOf('//') > 0) {
-              // exit if javascript or bad href
-              if (parts[0].length <= 0 || /\w+:\w+/gi.test(oldHref) || oldHref.toLowerCase().indexOf('javascript:') > -1 || oldHref.toLowerCase().indexOf('utm_') > -1) {
-                that.log("update skip [".concat(oldHref, "]"));
-                return;
-              } // append & instead of ? if existing query string
-
-
-              parts[0] = parts[0] + (parts[0].indexOf('?') < 0 ? '?' : '&') + queryStr; // finally add back hash
-
-              if (parts[1]) {
-                parts[0] = parts[0] + '#' + parts[1];
+            if (sessionUtm) {
+              if (queryString.indexOf('utm_') < 0) {
+                var pageUrl = that.appendQuery(queryString, queryStr);
+                wu.win.history.pushState('', '', pageUrl);
               }
+            } // rewrite urls
 
-              that.log("update from [".concat(oldHref, "] to [").concat(parts[0], "]"));
-              wu.setAttr(v, 'href', parts[0]);
-            }
-          });
+
+            wu.each(wu.win.jQuery('a'), function (v, k) {
+              var oldQuery = wu.getAttr(v, 'href');
+              var query = that.appendQuery(oldQuery, queryStr);
+
+              if (oldQuery !== query) {
+                wu.setAttr(v, 'href', query);
+              }
+            });
+          } catch (e) {
+            wu.debug(e);
+          }
         });
       }
     }
@@ -370,6 +398,7 @@ function () {
             el: evt.label,
             ev: evt.value,
             ec: evt.category + '_' + wu.win.location.hostname,
+            dl: wu.win.location.href,
             cb: new Date().getTime()
           };
 
@@ -386,7 +415,7 @@ function () {
 
 
         if (typeof wu.win.dataLayer !== 'undefined') {
-          var dataLayer = wu.win.dataLayer; // use gtag logic allow pushing data to both gtag and GTM
+          var dataLayer = wu.win.dataLayer || []; // use gtag logic allow pushing data to both gtag and GTM
 
           var gtag = wu.win.gtag || function () {
             dataLayer.push(arguments);

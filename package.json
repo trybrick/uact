@@ -1,6 +1,6 @@
 {
   "name": "uact",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "UTM auto click tracker",
   "main": "lib/uact.min.js",
   "repository": {

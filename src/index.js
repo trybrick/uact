@@ -40,7 +40,8 @@ class Uact {
     this.wu = wu;
     this.log = wu.debug('uact');
     this._name = 'Uact';
-    this._brxua = '79697394-26';
+
+    // this._brxua = '79697394-26';
     this.init();
   }
 
@@ -50,6 +51,35 @@ class Uact {
    */
   get name() {
     return this._name;
+  }
+
+  appendQuery(existing, queryStr) {
+    const that = this;
+    const oldHref = wu.isNull(existing, '/') || '/';
+    const parts = existing.split('#');
+
+    if (oldHref.indexOf('/') > -1) {
+      // exit if javascript or bad href
+      if (/\w+:\w+/gi.test(oldHref) ||
+        oldHref.toLowerCase().indexOf('javascript:') > -1 ||
+        oldHref.toLowerCase().indexOf('utm_') > -1) {
+        that.log(`update skip [${oldHref}]`);
+        return existing;
+      }
+
+      // append & instead of ? if existing query string
+      parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryStr;
+
+      // finally add back hash
+      if (parts[1]) {
+        parts[0] = parts[0] + '#' + parts[1];
+      }
+
+      that.log(`update from [${oldHref}] to [${parts[0]}]`);
+      return parts[0];
+    }
+
+    return existing;
   }
 
   /**
@@ -69,21 +99,21 @@ class Uact {
       });
     }
 
-    // store query string in cookie if utm_campaign exists
-    if (query.utm_campaign) {
-      // overide existing cookie
-      wu.cookie('brxutmquery', JSON.stringify(query));
-    } else {
-      try {
+    try {
+      // store query string in cookie if utm_campaign exists
+      if (query.utm_campaign) {
+        wu.win.sessionStorage.setItem('brxutm', 'true');
+        // overide existing cookie
+        wu.cookie('brxutmquery', JSON.stringify(query));
+      } else {
         const myq = wu.cookie('brxutmquery');
 
         if (myq && myq.indexOf('{') > -1) {
           query = JSON.parse(myq);
         }
-
-      } catch (e) {
-        wu.debug(e);
       }
+    } catch (e) {
+      wu.debug(e);
     }
 
     return asObject ? query : wu.queryStringify(query);;
@@ -106,32 +136,29 @@ class Uact {
     if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
       that.log('begin updating anchors');
       wu.win.jQuery(wu.doc).ready(() => {
-        wu.each(wu.win.jQuery('a'), (v, k) => {
-          const oldHref = wu.isNull(wu.getAttr(v, 'href'), '');
-          const parts = oldHref.split('#');
+        try {
+          const sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
 
-          if (oldHref.indexOf('//') > 0) {
-            // exit if javascript or bad href
-            if (parts[0].length <= 0 ||
-              /\w+:\w+/gi.test(oldHref) ||
-              oldHref.toLowerCase().indexOf('javascript:') > -1 ||
-              oldHref.toLowerCase().indexOf('utm_') > -1) {
-              that.log(`update skip [${oldHref}]`);
-              return;
+          if (sessionUtm) {
+            if (queryString.indexOf('utm_') < 0) {
+              const pageUrl = that.appendQuery(queryString, queryStr);
+
+              wu.win.history.pushState('', '', pageUrl);
             }
-
-            // append & instead of ? if existing query string
-            parts[0] = parts[0] + ((parts[0].indexOf('?') < 0) ? '?' : '&') + queryStr;
-
-            // finally add back hash
-            if (parts[1]) {
-              parts[0] = parts[0] + '#' + parts[1];
-            }
-
-            that.log(`update from [${oldHref}] to [${parts[0]}]`);
-            wu.setAttr(v, 'href', parts[0]);
           }
-        });
+
+          // rewrite urls
+          wu.each(wu.win.jQuery('a'), (v, k) => {
+            const oldQuery = wu.getAttr(v, 'href');
+            const query = that.appendQuery(oldQuery, queryStr);
+
+            if (oldQuery !== query) {
+              wu.setAttr(v, 'href', query);
+            }
+          });
+        } catch (e) {
+          wu.debug(e);
+        }
       });
     }
 
@@ -218,6 +245,7 @@ class Uact {
           el: evt.label,
           ev: evt.value,
           ec: evt.category + '_' + wu.win.location.hostname,
+          dl: wu.win.location.href,
           cb: (new Date().getTime())
         };
 
@@ -233,7 +261,7 @@ class Uact {
 
       // track google tag manager
       if (typeof (wu.win.dataLayer) !== 'undefined') {
-        const dataLayer = wu.win.dataLayer;
+        const dataLayer = wu.win.dataLayer || [];
         // use gtag logic allow pushing data to both gtag and GTM
         const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
