@@ -32,3 +32,5 @@ node_modules
 .DS_Store
 .ds_store
 .nyc_output
+
+package-lock.json

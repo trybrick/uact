@@ -125,9 +125,10 @@ class Uact {
    */
   init() {
     const that = this;
+    const qry  = wu.queryParseString(queryString);
 
-    if (opts.debug) {
-      wu.debug.enable(opts.debug);
+    if (qry.debug) {
+      wu.debug.enable(qry.debug);
     }
 
     that.setupHandlers();

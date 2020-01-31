@@ -2,7 +2,7 @@
  * uact
  * UTM auto click tracker
 
- * @version v0.3.3
+ * @version v0.3.4
  * @author Tom Noogen
  * @homepage https://github.com/trybrick/uact
  * @repository https://github.com/trybrick/uact.git
@@ -275,9 +275,10 @@ function () {
     key: "init",
     value: function init() {
       var that = this;
+      var qry = wu.queryParseString(queryString);
 
-      if (opts.debug) {
-        wu.debug.enable(opts.debug);
+      if (qry.debug) {
+        wu.debug.enable(qry.debug);
       }
 
       that.setupHandlers();
