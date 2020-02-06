@@ -56,7 +56,8 @@ class Uact {
   appendQuery(existing, queryStr) {
     const that = this;
     const oldHref = wu.isNull(existing, '/') || '/';
-    const parts = existing.split('#');
+    const parts = oldHref.split('#');
+    that.log(`updating ${oldHref}`);
 
     if (oldHref.indexOf('/') > -1) {
       // exit if javascript or bad href
@@ -153,19 +154,22 @@ class Uact {
             }
 
             // rewrite urls
-            wu.each(wu.win.jQuery('a'), (v, k) => {
-              const oldQuery = wu.getAttr(v, 'href');
+            const found = wu.win.jQuery('a');
+            that.log(`anchors count ${ found.length }`);
+            wu.win.jQuery.each(found, (k, v) => {
+              const item     = wu.win.jQuery(v);
+              const oldQuery = item.attr('href');
               const query = that.appendQuery(oldQuery, queryStr);
 
               if (oldQuery !== query) {
-                wu.setAttr(v, 'href', query);
+                item.attr('href', query);
               }
             });
           } catch (e) {
             wu.debug(e);
           }
 
-        }, 500);
+        }, 1000);
       });
     }
 

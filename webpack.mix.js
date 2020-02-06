@@ -1,16 +1,19 @@
 const webpack = require('webpack');
 const path    = require('path');
 const mix     = require('laravel-mix');
-const public  = mix.inProduction() ? 'lib' : 'example';
+const public  = 'lib';
 const pkg     = require('./package.json');
 const fs      = require('fs');
 
 mix.setPublicPath(path.normalize(public));
 
 const libraryName = pkg.name;
+const date = new Date();
 const banner  = `/*!
  * ${pkg.name}
  * ${pkg.description}\n
+ * Date: ${date.toISOString()}
+ *
  * @version v${pkg.version}
  * @author ${pkg.author}
  * @homepage ${pkg.homepage}
@@ -45,18 +48,18 @@ const config = {
 
 mix.webpackConfig(config).sourceMaps();
 mix.js(`src/index.js`, `${ public }`);
-mix.then(function () {
-  const data   = fs.readFileSync(`${ public }/${ fileName }`);
-  const fd     = fs.openSync(`${ public }/${ fileName }`, 'w+');
-  const insert = new Buffer(banner);
-  fs.writeSync(fd, insert, 0, insert.length, 0)
-  fs.writeSync(fd, data, 0, data.length, insert.length)
-  fs.close(fd, (err) => {
-    if (err) throw err;
-  });
-});
 
 if (mix.inProduction()) {
+  mix.then(function () {
+    const data   = fs.readFileSync(`${ public }/${ fileName }`);
+    const fd     = fs.openSync(`${ public }/${ fileName }`, 'w+');
+    const insert = new Buffer(banner);
+    fs.writeSync(fd, insert, 0, insert.length, 0)
+    fs.writeSync(fd, data, 0, data.length, insert.length)
+    fs.close(fd, (err) => {
+      if (err) throw err;
+    });
+  });
   mix.version();
   mix.disableNotifications();
 } else {
@@ -64,13 +67,12 @@ if (mix.inProduction()) {
     proxy: false,
     port: 3000,
     files: [
-      'src/*',
-      'example/*'
+      'src/*'
     ],
     browser: 'firefox',
     open: 'local',
     server: {
-      baseDir: './example/'
+      baseDir: './'
     }
   });
 }
