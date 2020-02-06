@@ -77,6 +77,8 @@ class Uact {
 
       that.log(`update from [${oldHref}] to [${parts[0]}]`);
       return parts[0];
+    } else {
+      that.log(`skipping [${oldHref}]`);
     }
 
     return existing;
@@ -136,30 +138,34 @@ class Uact {
 
     if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
       that.log('begin updating anchors');
+
       wu.win.jQuery(wu.doc).ready(() => {
-        try {
-          const sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
+        wu.win.setTimeout(() => {
+          try {
+            const sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
 
-          if (sessionUtm) {
-            if (queryString.indexOf('utm_') < 0) {
-              const pageUrl = that.appendQuery(queryString, queryStr);
+            if (sessionUtm) {
+              if (queryString.indexOf('utm_') < 0) {
+                const pageUrl = that.appendQuery(queryString, queryStr);
 
-              wu.win.history.pushState('', '', pageUrl);
+                wu.win.history.pushState('', '', pageUrl);
+              }
             }
+
+            // rewrite urls
+            wu.each(wu.win.jQuery('a'), (v, k) => {
+              const oldQuery = wu.getAttr(v, 'href');
+              const query = that.appendQuery(oldQuery, queryStr);
+
+              if (oldQuery !== query) {
+                wu.setAttr(v, 'href', query);
+              }
+            });
+          } catch (e) {
+            wu.debug(e);
           }
 
-          // rewrite urls
-          wu.each(wu.win.jQuery('a'), (v, k) => {
-            const oldQuery = wu.getAttr(v, 'href');
-            const query = that.appendQuery(oldQuery, queryStr);
-
-            if (oldQuery !== query) {
-              wu.setAttr(v, 'href', query);
-            }
-          });
-        } catch (e) {
-          wu.debug(e);
-        }
+        }, 500);
       });
     }
 

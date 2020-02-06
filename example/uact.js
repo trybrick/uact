@@ -2,7 +2,7 @@
  * uact
  * UTM auto click tracker
 
- * @version v0.3.4
+ * @version v0.3.5
  * @author Tom Noogen
  * @homepage https://github.com/trybrick/uact
  * @repository https://github.com/trybrick/uact.git
@@ -222,6 +222,8 @@ function () {
 
         that.log("update from [".concat(oldHref, "] to [").concat(parts[0], "]"));
         return parts[0];
+      } else {
+        that.log("skipping [".concat(oldHref, "]"));
       }
 
       return existing;
@@ -287,28 +289,30 @@ function () {
       if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
         that.log('begin updating anchors');
         wu.win.jQuery(wu.doc).ready(function () {
-          try {
-            var sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
+          wu.win.setTimeout(function () {
+            try {
+              var sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
 
-            if (sessionUtm) {
-              if (queryString.indexOf('utm_') < 0) {
-                var pageUrl = that.appendQuery(queryString, queryStr);
-                wu.win.history.pushState('', '', pageUrl);
-              }
-            } // rewrite urls
+              if (sessionUtm) {
+                if (queryString.indexOf('utm_') < 0) {
+                  var pageUrl = that.appendQuery(queryString, queryStr);
+                  wu.win.history.pushState('', '', pageUrl);
+                }
+              } // rewrite urls
 
 
-            wu.each(wu.win.jQuery('a'), function (v, k) {
-              var oldQuery = wu.getAttr(v, 'href');
-              var query = that.appendQuery(oldQuery, queryStr);
+              wu.each(wu.win.jQuery('a'), function (v, k) {
+                var oldQuery = wu.getAttr(v, 'href');
+                var query = that.appendQuery(oldQuery, queryStr);
 
-              if (oldQuery !== query) {
-                wu.setAttr(v, 'href', query);
-              }
-            });
-          } catch (e) {
-            wu.debug(e);
-          }
+                if (oldQuery !== query) {
+                  wu.setAttr(v, 'href', query);
+                }
+              });
+            } catch (e) {
+              wu.debug(e);
+            }
+          }, 500);
         });
       }
     }
