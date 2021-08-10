@@ -183,7 +183,7 @@ class Uact {
     const query = that.getUtmQuery(true);
 
 /*eslint-disable */
-    // tom mistake come back to bite me
+    // mistake come back to bite me
     if (query.utm_name) {
       query.utm_campaign = query.utm_name;
     }
@@ -276,11 +276,10 @@ class Uact {
         // use gtag logic allow pushing data to both gtag and GTM
         const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
-        gtag('event', evt.action, {
-          'event_category': evt.category,
-          'event_label': evt.label,
-          'value': evt.value
-        });
+        gtag('event', 'click', {
+          eventCategory: evt.category,
+          eventLabel: evt.label
+        })
       }
 
       // send to all classic analytic named trackers
@@ -308,4 +307,4 @@ class Uact {
   }
 };
 
-module.exports = new Uact();
+export default new Uact();
