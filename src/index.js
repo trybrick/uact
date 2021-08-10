@@ -216,7 +216,7 @@ class Uact {
 
         if (opt) {
           evt.action = target.name || target.id || e.type || 'select action';
-          evt.label = `${opt.value}_${opt.text}`;
+          evt.label = `${evt.action}_${opt.value}`;
         }
       } else if (btn) {
         evt.action = btn.name || btn.id || e.type || 'button action';
@@ -236,7 +236,7 @@ class Uact {
         }
 
         evt.action = wu.getAttr(a, 'href');
-        evt.label = a.textContent || a.innerText;
+        evt.label = a.textContent || a.innerText || evt.action;
       }
 
       if (!evt.action) {
@@ -278,7 +278,7 @@ class Uact {
 
         gtag('event', 'click', {
           eventCategory: evt.category,
-          eventLabel: evt.label
+          eventLabel: evt.label || evt.action
         })
       }
 
@@ -287,10 +287,12 @@ class Uact {
         const trackers = wu.win.ga.getAll();
 
         trackers.forEach(tracker => {
-          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label, evt.value);
+          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label || evt.action, evt.value);
         });
       }
     } // end actionHandler
+
+    that.actionHandler = actionHandler;
 
     wu.addEvent(wu.doc, 'click', actionHandler);
     wu.addEvent(wu.doc, 'tap', actionHandler);
