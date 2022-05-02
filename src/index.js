@@ -12,10 +12,10 @@ if (!currentScript) {
 const scriptQuery = currentScript ? currentScript.src.split('?')[1] : '';
 const queryString = (wu.win.location.search + '').substring(1);
 
-let opts = wu.getAttrs(currentScript);
+let uactOpts = wu.getAttrs(currentScript);
 
 if (scriptQuery) {
-  opts = wu.extend(opts, wu.queryParseString(scriptQuery));
+  uactOpts = wu.extend(uactOpts, wu.queryParseString(scriptQuery));
 }
 
 if (wu.win.Element && !wu.win.Element.prototype.closest) {
@@ -41,7 +41,6 @@ class Uact {
     this.log = wu.debug('uact');
     this._name = 'Uact';
 
-    // this._brxua = '79697394-26';
     this.init();
   }
 
@@ -51,6 +50,38 @@ class Uact {
    */
   get name() {
     return this._name;
+  }
+
+  sleep(ms) {
+    var start = new Date().getTime();
+    while (new Date().getTime() - start < ms); 
+  }
+
+  pushEvent(evt) {
+    const events = JSON.parse(wu.win.localStorage.getItem('brxe') || '[]');
+    events.push(evt);
+    wu.win.localStorage.setItem('brxe', JSON.stringify(events));
+  }
+
+  processEvents(fromLoad = false) {
+    const that = this;
+    const events = JSON.parse(wu.win.localStorage.getItem('brxe') || '[]');
+    let myEvt = events[0] || '';
+    if (myEvt.length > 0) {
+      const image = new Image(1,1);
+      that.log(`event: ${myEvt}`);
+
+      if (fromLoad) {
+        events.shift();
+        wu.win.localStorage.setItem('brxe', JSON.stringify(events));
+      } else {
+        wu.addEvent(image, 'load', function() {
+          events.shift();
+          wu.win.localStorage.setItem('brxe', JSON.stringify(events));
+        });
+      }
+      image.src = myEvt;
+    }
   }
 
   appendQuery(existing, queryStr) {
@@ -124,7 +155,6 @@ class Uact {
 
   /**
    * init function
-   * @param  {object} opts options
    */
   init() {
     const that = this;
@@ -137,42 +167,40 @@ class Uact {
     that.setupHandlers();
     const queryStr = that.getUtmQuery(false);
 
-    if (!opts.disableDeepTracking && wu.win.jQuery && queryStr.indexOf('utm_') > -1) {
+    if (!uactOpts.disableDeepTracking && queryStr.indexOf('utm_') > -1) {
       that.log('begin updating anchors');
 
-      wu.win.jQuery(wu.doc).ready(() => {
-        wu.win.setTimeout(() => {
-          try {
-            const sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
+      wu.win.setTimeout(() => {
+        try {
+          const sessionUtm = wu.win.sessionStorage.getItem('brxutm') || wu.win.sessionStorage.brxutm;
 
-            if (sessionUtm) {
-              if (queryString.indexOf('utm_') < 0) {
-                const pageUrl = that.appendQuery(queryString, queryStr);
+          if (sessionUtm) {
+            if (queryString.indexOf('utm_') < 0) {
+              const pageUrl = that.appendQuery(queryString, queryStr);
 
-                wu.win.history.pushState('', '', pageUrl);
-              }
+              wu.win.history.pushState('', '', pageUrl);
             }
-
-            // rewrite urls
-            const found = wu.win.jQuery('a');
-            that.log(`anchors count ${ found.length }`);
-            wu.win.jQuery.each(found, (k, v) => {
-              const item     = wu.win.jQuery(v);
-              const oldQuery = item.attr('href');
-              const query = that.appendQuery(oldQuery, queryStr);
-
-              if (oldQuery !== query) {
-                item.attr('href', query);
-              }
-            });
-          } catch (e) {
-            wu.debug(e);
           }
 
-        }, 1000);
-      });
-    }
+          // rewrite urls
+          var found = document.querySelectorAll('a'), i;
+          that.log(`anchors count ${ found.length }`);
 
+          for (i = 0; i < found.length; ++i) {
+            const item     = found[i];
+            const oldQuery = wu.getAttr(item, 'href');
+            const query    = that.appendQuery(oldQuery, queryStr);
+
+            if (oldQuery !== query) {
+              wu.setAttr(item, 'href', query);
+            }
+          }
+        } catch (e) {
+          wu.debug(e);
+        }
+
+      }, 2000);
+    }
   }
 
   /**
@@ -183,11 +211,6 @@ class Uact {
     const query = that.getUtmQuery(true);
 
 /*eslint-disable */
-    // mistake come back to bite me
-    if (query.utm_name) {
-      query.utm_campaign = query.utm_name;
-    }
-
     if (wu.isNull(query.utm_campaign, '').length < 2) {
       that.log('exiting: invalid utm_campaign');
       return query;
@@ -220,7 +243,7 @@ class Uact {
         }
       } else if (btn) {
         evt.action = btn.name || btn.id || e.type || 'button action';
-        evt.label = btn.textContent || btn.innerText;
+        evt.label = btn.textContent || btn.innerText || evt.action;
       } else if (e.type === 'change') {
         that.log('exiting from non-select change event');
         return;
@@ -230,7 +253,7 @@ class Uact {
       } else {
         const a = target.closest('a');
 
-        if (!a) {
+        if (tagName !== 'A' && !a) {
           that.log(`exiting from ${e.type} event with no valid parent element`);
           return;
         }
@@ -248,47 +271,28 @@ class Uact {
       that.log(evt);
 
       // track event in our own analytics
-      if (that._brxua) {
-        const image = new Image(1, 1);
+      if (uactOpts.site) {
 
         let uae = {
-          ea: evt.action,
-          el: evt.label,
-          ev: evt.value,
           ec: evt.category + '_' + wu.win.location.hostname,
-          dl: wu.win.location.href,
+          el: evt.label || evt.action,
+          ev: evt.value,
+          utmn: evt.query.utm_campaign,
+          utms: evt.query.utm_source,
+          utmm: evt.query.utm_medium,
+          utmc: evt.query.utm_content,
+          utmt: evt.query.utm_term,
           cb: (new Date().getTime())
         };
-
-        if (!uae.ea) {
-          uae = wu.del(uae, 'ea');
+        for (var propName in uae) {
+          if (uae[propName] === null || uae[propName] === undefined) {
+            delete uae[propName];
+          }
         }
-        if (!uae.el) {
-          uae = wu.del(uae, 'el');
-        }
+        uae.pg = document.location.pathname;
 
-        image.src = `https://pi.brickinc.net/ua/${that._brxua}?` + wu.queryStringify(uae) + '&' + queryString;
-      }
-
-      // track google tag manager
-      if (typeof (wu.win.dataLayer) !== 'undefined') {
-        const dataLayer = wu.win.dataLayer || [];
-        // use gtag logic allow pushing data to both gtag and GTM
-        const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
-
-        gtag('event', 'click', {
-          eventCategory: evt.category,
-          eventLabel: evt.label || evt.action
-        })
-      }
-
-      // send to all classic analytic named trackers
-      if (typeof (wu.win.ga) !== 'undefined') {
-        const trackers = wu.win.ga.getAll();
-
-        trackers.forEach(tracker => {
-          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label || evt.action, evt.value);
-        });
+        that.pushEvent(`https://pi.brickinc.net/evt/${uactOpts.site}/?${wu.queryStringify(uae)}`);
+        that.processEvents(false);
       }
     } // end actionHandler
 
@@ -301,9 +305,16 @@ class Uact {
 
     // for some reason, tel does not propagate
     // so we track it separately
-    if (typeof (wu.win.jQuery) !== 'undefined') {
-      wu.win.jQuery('a[href^="tel:"').click(actionHandler);
+    var tels = document.querySelectorAll('a[href^="tel:"'), i;
+
+    for (i = 0; i < tels.length; ++i) {
+      wu.addEvent(tels[i], 'click', actionHandler);
     }
+
+    // make sure all events are processed
+    that.processEvents(true);
+    that.processEvents(true);
+    that.processEvents(true);
 
     return query;
   }
