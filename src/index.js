@@ -52,11 +52,6 @@ class Uact {
     return this._name;
   }
 
-  sleep(ms) {
-    var start = new Date().getTime();
-    while (new Date().getTime() - start < ms); 
-  }
-
   pushEvent(evt) {
     const events = JSON.parse(wu.win.localStorage.getItem('brxe') || '[]');
     events.push(evt);
@@ -274,6 +269,7 @@ class Uact {
       if (uactOpts.site) {
 
         let uae = {
+          site: uactOpts.site,
           ec: evt.category + '_' + wu.win.location.hostname,
           el: evt.label || evt.action,
           ev: evt.value,
@@ -282,16 +278,23 @@ class Uact {
           utmm: evt.query.utm_medium,
           utmc: evt.query.utm_content,
           utmt: evt.query.utm_term,
-          cb: (new Date().getTime())
+          ts: (new Date().getTime())
         };
+        
         for (var propName in uae) {
           if (uae[propName] === null || uae[propName] === undefined) {
             delete uae[propName];
+          } else {
+            uae[propName] = (uae[propName] || '')
+                              .toLowerCase()
+                              .replace(/[^0-9a-z_-]+/g, '-')
+                              .replace(/-{2,}/g, '-');
           }
         }
-        uae.pg = document.location.pathname;
 
-        that.pushEvent(`https://pi.brickinc.net/evt/${uactOpts.site}/?${wu.queryStringify(uae)}`);
+        uae.pg = document.location.pathname.toLowerCase();
+
+        that.pushEvent(`https://pi.brickinc.net/bake/?${wu.queryStringify(uae).toLowerCase()}`);
         that.processEvents(false);
       }
     } // end actionHandler
