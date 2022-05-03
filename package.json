@@ -1,6 +1,6 @@
 {
   "name": "uact",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "UTM auto click tracker",
   "main": "lib/uact.min.js",
   "repository": {
@@ -46,7 +46,6 @@
     "ava": "^4.2.0",
     "browser-sync": "^2.27.9",
     "browser-sync-webpack-plugin": "^2.3.0",
-    "cross-env": "^7.0.3",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-friendly-formatter": "^4.0.1",

@@ -77,6 +77,8 @@ class Uact {
       }
       image.src = myEvt;
     }
+
+    return events;
   }
 
   appendQuery(existing, queryStr) {
@@ -315,9 +317,10 @@ class Uact {
     }
 
     // make sure all events are processed
-    that.processEvents(true);
-    that.processEvents(true);
-    that.processEvents(true);
+    let events = that.processEvents(true);
+    while (events.length > 0) {
+      events = that.processEvents(true);
+    }
 
     return query;
   }
