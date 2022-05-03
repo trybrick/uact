@@ -192,6 +192,11 @@ class Uact {
               wu.setAttr(item, 'href', query);
             }
           }
+
+          // set site from global variable brxSite
+          if (undefined === uactOpts.site) {
+            uactOpts.site = wu.win.brxSite;
+          }
         } catch (e) {
           wu.debug(e);
         }
@@ -218,14 +223,14 @@ class Uact {
       const event = e || that.win.event;
       const target = event.target || event.srcElement;
       const btn = target.closest('button');
-      const evt = {query: query, category: query.utm_campaign, value: 1 };
+      const evt = {query: query};
       const tagName = (target.tagName + '').toLowerCase();
 
       if (tagName === 'input') {
         const targetType = target.type.toLowerCase();
 
         if (targetType === 'submit' || targetType === 'button') {
-          evt.action = target.name || target.id || e.type || 'button action';
+          evt.action = target.name || target.id || e.type || 'input button';
           evt.label = target.value;
         } else {
           that.log(`exiting from ${e.type} - ignoring input type ${targetType}`);
@@ -235,17 +240,17 @@ class Uact {
         const opt = target.options[target.selectedIndex];
 
         if (opt) {
-          evt.action = target.name || target.id || e.type || 'select action';
-          evt.label = `${evt.action}_${opt.value}`;
+          evt.action = target.name || target.id || e.type || 'select';
+          evt.label = `${opt.value}`;
         }
       } else if (btn) {
-        evt.action = btn.name || btn.id || e.type || 'button action';
+        evt.action = btn.name || btn.id || e.type || 'button';
         evt.label = btn.textContent || btn.innerText || evt.action;
       } else if (e.type === 'change') {
         that.log('exiting from non-select change event');
         return;
       } else if (e.type === 'submit') {
-        evt.action = 'submit action';
+        evt.action = e.type;
         evt.label = target.action;
       } else {
         const a = target.closest('a');
@@ -255,8 +260,9 @@ class Uact {
           return;
         }
 
-        evt.action = wu.getAttr(a, 'href');
-        evt.label = a.textContent || a.innerText || evt.action;
+        evt.action = 'link';
+        evt.label = wu.getAttr(a, 'href');
+        evt.value = a.textContent || a.innerText;
       }
 
       if (!evt.action) {
@@ -266,37 +272,38 @@ class Uact {
 
       that.log('triggering...');
       that.log(evt);
+      const site = uactOpts.site || wu.win.brxSite;
 
       // track event in our own analytics
-      if (uactOpts.site) {
+      if (site) {
 
         let uae = {
-          site: uactOpts.site,
-          ec: evt.category + '_' + wu.win.location.hostname,
-          el: evt.label || evt.action,
+          site: site,
+          ec: evt.action || e.type,
+          el: evt.label,
           ev: evt.value,
           utmn: evt.query.utm_campaign,
           utms: evt.query.utm_source,
           utmm: evt.query.utm_medium,
           utmc: evt.query.utm_content,
-          utmt: evt.query.utm_term,
-          ts: (new Date().getTime())
+          utmt: evt.query.utm_term
         };
         
         for (var propName in uae) {
           if (uae[propName] === null || uae[propName] === undefined) {
             delete uae[propName];
           } else {
-            uae[propName] = (uae[propName] || '')
+            /* uae[propName] = (uae[propName] + '')
                               .toLowerCase()
                               .replace(/[^0-9a-z_-]+/g, '-')
-                              .replace(/-{2,}/g, '-');
+                              .replace(/-{2,}/g, '-');*/
           }
         }
 
-        uae.pg = document.location.pathname.toLowerCase();
+        uae.page = wu.win.location.pathname.toLowerCase();
+        uae.ts   = `${(new Date().getTime())}`;
 
-        that.pushEvent(`https://pi.brickinc.net/shake/?n=bake&${wu.queryStringify(uae).toLowerCase()}`);
+        that.pushEvent(`https://pi.brickinc.net/shake/?${wu.queryStringify(uae)}`);
         that.processEvents(false);
       }
     } // end actionHandler
