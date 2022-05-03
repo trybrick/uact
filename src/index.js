@@ -294,7 +294,7 @@ class Uact {
 
         uae.pg = document.location.pathname.toLowerCase();
 
-        that.pushEvent(`https://pi.brickinc.net/bake/?${wu.queryStringify(uae).toLowerCase()}`);
+        that.pushEvent(`https://pi.brickinc.net/shake/?n=bake&${wu.queryStringify(uae).toLowerCase()}`);
         that.processEvents(false);
       }
     } // end actionHandler
