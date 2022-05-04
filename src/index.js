@@ -52,6 +52,13 @@ class Uact {
     return this._name;
   }
 
+  slugify(str) {
+    return (str || '')
+      .toLowerCase()
+      .replace(/[^0-9a-z_-]+/g, '-')
+      .replace(/-{2,}/g, '-');
+  }
+
   pushEvent(evt) {
     const events = JSON.parse(wu.win.localStorage.getItem('brxe') || '[]');
     events.push(evt);
@@ -262,7 +269,7 @@ class Uact {
 
         evt.action = 'link';
         evt.label = wu.getAttr(a, 'href');
-        evt.value = a.textContent || a.innerText;
+        evt.value = that.slugify(a.textContent || a.innerText);
       }
 
       if (!evt.action) {
