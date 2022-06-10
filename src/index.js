@@ -313,6 +313,28 @@ class Uact {
         that.pushEvent(`https://pi.brickinc.net/shake/?${wu.queryStringify(uae)}`);
         that.processEvents(false);
       }
+
+      // TODO: remove below after a period of time
+      // track google tag manager
+      if (typeof (wu.win.dataLayer) !== 'undefined') {
+        const dataLayer = wu.win.dataLayer || [];
+        // use gtag logic allow pushing data to both gtag and GTM
+        const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
+
+        gtag('event', 'click', {
+          eventCategory: evt.category,
+          eventLabel: evt.label || evt.action
+        });
+      }
+
+      // send to all classic analytic named trackers
+      if (typeof (wu.win.ga) !== 'undefined') {
+        const trackers = wu.win.ga.getAll();
+
+        trackers.forEach(tracker => {
+          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label || evt.action, evt.value);
+        });
+      }
     } // end actionHandler
 
     that.actionHandler = actionHandler;
