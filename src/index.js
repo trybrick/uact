@@ -321,9 +321,11 @@ class Uact {
         // use gtag logic allow pushing data to both gtag and GTM
         const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
-        gtag('event', 'click', {
-          eventCategory: evt.category,
-          eventLabel: evt.label || evt.action
+        gtag('event', 'uact', {
+          event_action: evt.action,
+          event_category: evt.category,
+          event_label: evt.label || evt.action,
+          event_value: evt.value
         });
       }
 
