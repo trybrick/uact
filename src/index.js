@@ -280,22 +280,20 @@ class Uact {
       that.log('triggering...');
       that.log(evt);
       const site = uactOpts.site || wu.win.brxSite;
+      let uae = {
+        site: site,
+        ec: evt.action || e.type,
+        el: evt.label,
+        ev: evt.value,
+        utmn: evt.query.utm_campaign,
+        utms: evt.query.utm_source,
+        utmm: evt.query.utm_medium,
+        utmc: evt.query.utm_content,
+        utmt: evt.query.utm_term
+      };
 
       // track event in our own analytics
-      if (site) {
-
-        let uae = {
-          site: site,
-          ec: evt.action || e.type,
-          el: evt.label,
-          ev: evt.value,
-          utmn: evt.query.utm_campaign,
-          utms: evt.query.utm_source,
-          utmm: evt.query.utm_medium,
-          utmc: evt.query.utm_content,
-          utmt: evt.query.utm_term
-        };
-        
+      if (site) {  
         for (var propName in uae) {
           if (uae[propName] === null || uae[propName] === undefined) {
             delete uae[propName];
@@ -322,10 +320,9 @@ class Uact {
         const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
         gtag('event', 'uact', {
-          event_action: evt.action,
-          event_category: evt.category,
-          event_label: evt.label || evt.action,
-          event_value: evt.value
+          eventCategory: uae.ec,
+          eventLabel: uae.el,
+          value: uae.ev
         });
       }
 
@@ -334,7 +331,7 @@ class Uact {
         const trackers = wu.win.ga.getAll();
 
         trackers.forEach(tracker => {
-          wu.win.ga(tracker.get('name') + '.send', 'event', evt.category, evt.action, evt.label || evt.action, evt.value);
+          wu.win.ga(tracker.get('name') + '.send', 'event', uact.ec, 'uact', uae.el, uae.ev);
         });
       }
     } // end actionHandler
