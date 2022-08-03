@@ -312,8 +312,7 @@ class Uact {
         that.processEvents(false);
       }
 
-      // TODO: remove below after a period of time
-      // track google tag manager
+      // track GA4
       if (typeof (wu.win.dataLayer) !== 'undefined') {
         const dataLayer = wu.win.dataLayer || [];
         // use gtag logic allow pushing data to both gtag and GTM
@@ -322,16 +321,7 @@ class Uact {
         gtag('event', 'uact', {
           eventCategory: uae.ec,
           eventLabel: uae.el,
-          value: uae.ev
-        });
-      }
-
-      // send to all classic analytic named trackers
-      if (typeof (wu.win.ga) !== 'undefined') {
-        const trackers = wu.win.ga.getAll();
-
-        trackers.forEach(tracker => {
-          wu.win.ga(tracker.get('name') + '.send', 'event', uact.ec, 'uact', uae.el, uae.ev);
+          value: uae.ev || uae.type
         });
       }
     } // end actionHandler
