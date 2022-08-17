@@ -319,9 +319,9 @@ class Uact {
         const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
 
         gtag('event', 'uact', {
-          eventCategory: uae.ec,
-          eventLabel: uae.el,
-          value: uae.ev || uae.type
+          'event_category': uae.ec,
+          'event_label': uae.el,
+          'event_type': uae.ev || uae.type
         });
       }
     } // end actionHandler
