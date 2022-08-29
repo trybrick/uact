@@ -324,6 +324,15 @@ class Uact {
           'event_type': uae.ev || uae.type
         });
       }
+
+      // send to all classic analytic named trackers
+      if (typeof (wu.win.ga) !== 'undefined') {
+        const trackers = wu.win.ga.getAll();
+
+        trackers.forEach(tracker => {
+          wu.win.ga(tracker.get('name') + '.send', 'event', uae.ec, 'uact', uae.el, uae.ev || uae.type);
+        });
+      }
     } // end actionHandler
 
     that.actionHandler = actionHandler;
