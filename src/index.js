@@ -267,9 +267,8 @@ class Uact {
           return;
         }
 
-        evt.action = 'link';
-        evt.label = wu.getAttr(a, 'href');
-        evt.value = that.slugify(a.textContent || a.innerText);
+        evt.action = 'link:' + wu.getAttr(a, 'href');
+        evt.label = that.slugify(a.textContent || a.innerText);
       }
 
       if (!evt.action) {
@@ -284,7 +283,6 @@ class Uact {
         site: site,
         ec: evt.action || e.type,
         el: evt.label,
-        ev: evt.value,
         utmn: evt.query.utm_campaign,
         utms: evt.query.utm_source,
         utmm: evt.query.utm_medium,
@@ -320,8 +318,7 @@ class Uact {
 
         gtag('event', 'uact', {
           'event_category': uae.ec,
-          'event_label': uae.el,
-          'event_type': uae.ev || uae.type
+          'event_label': uae.el
         });
       }
 
@@ -330,7 +327,7 @@ class Uact {
         const trackers = wu.win.ga.getAll();
 
         trackers.forEach(tracker => {
-          wu.win.ga(tracker.get('name') + '.send', 'event', uae.ec, 'uact', uae.el, uae.ev || uae.type);
+          wu.win.ga(tracker.get('name') + '.send', 'event', uae.ec, 'uact', uae.el);
         });
       }
     } // end actionHandler
