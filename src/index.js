@@ -313,12 +313,17 @@ class Uact {
       // track GA4
       if (typeof (wu.win.dataLayer) !== 'undefined') {
         const dataLayer = wu.win.dataLayer || [];
-        // use gtag logic allow pushing data to both gtag and GTM
-        const gtag = wu.win.gtag || function () {dataLayer.push(arguments);};
+        dataLayer.push({
+          'event': 'uact',
+          'uec': uae.ec,
+          'uel': uae.el
+        });
+      }
 
-        gtag('event', 'uact', {
-          'event_category': uae.ec,
-          'event_label': uae.el
+      if (typeof (wu.win.gtag) !== 'undefined') {
+        wu.win.gtag('event', 'uact', {
+          'uec': uae.ec,
+          'uel': uae.el
         });
       }
 

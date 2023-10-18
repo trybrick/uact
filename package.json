@@ -1,6 +1,6 @@
 {
   "name": "uact",
-  "version": "0.6.6",
+  "version": "0.7.0",
   "description": "UTM auto click tracker",
   "main": "lib/uact.min.js",
   "repository": {
@@ -42,12 +42,12 @@
     "ie >= 8"
   ],
   "devDependencies": {
-    "@babel/eslint-parser": "^7.18.9",
-    "ava": "^4.3.3",
-    "browser-sync": "^2.27.10",
+    "@babel/eslint-parser": "^7.22.15",
+    "ava": "^5.3.1",
+    "browser-sync": "^2.29.3",
     "browser-sync-webpack-plugin": "^2.3.0",
-    "eslint": "^8.23.0",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint": "^8.51.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-friendly-formatter": "^4.0.1",
     "laravel-mix": "^6.0.49",
     "nyc": "^15.1.0",
